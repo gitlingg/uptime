@@ -5,6 +5,8 @@ import time
 import socket
 import datetime
 import requests
+import piglow
+import smbus
 
 lanip="185.151.30.154"
 wanip="185.151.30.154"
@@ -14,8 +16,11 @@ checkip="8.8.8.8"
 statusfile="status.csv"
 summaryfile="summary.csv"
 localstatus = dnsstatus = httpstatus = httpdnsstatus = False
+piglow.clear_on_exit = False
+
 upstream = downstream = ping = "0"
 runspeedtest = True
+showLight = True
 
 
 def current_timestamp():
@@ -47,48 +52,6 @@ def speedtest():
   except Exception as ex:
     return False
 
-def writestatus(file, values):
-  with open(file, mode='a') as status_file:
-      status_writer = csv.writer(status_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-      status_writer.writerow(values)
-  return("done")
-
-localstatus=check(lanip, 80, 3)
-print(localstatus)
-dnsstatus=check(dnsip, 53, 3)
-print(dnsstatus)
-httpstatus=check(wanip, 80, 3)
-print(httpstatus)
-httpdnsstatus=check(checkurl, 80, 3)
-print(httpdnsstatus)
-
-allup = (localstatus and dnsstatus and httpstatus and httpdnsstatus)
-anyup = (localstatus or dnsstatus or httpstatus or httpdnsstatus)
-alldown = (not localstatus and not dnsstatus and not httpstatus and not httpdnsstatus)
-anydown = (not localstatus or not dnsstatus or not httpstatus or not httpdnsstatus)
-print("AllUp:\t\t"+str(allup))
-print("AnyUp:\t\t"+str(anyup))
-print("AllDown:\t"+str(alldown))
-print("AnyDown:\t"+str(anydown))
-print(current_timestamp()+"\t..."+str(anyup))
-
-#print (localstatus and dnsstatus and httpstatus and httpdnsstatus)
-if allup:
-  speedtest()
-
-def switch(value):
-  if value:
-    return "UP"
-  else:
-    return "Down"
-
-
-localstatus = switch(localstatus)
-dnsstatus = switch(dnsstatus)
-httpstatus = switch(httpstatus)
-httpdnsstatus = switch(httpdnsstatus)
-
-
 def cloudpost(trigger, value1="value", value2="value", value3="value" ):
   #curl -X POST -H "Content-Type: application/json" -d '{"value1":"a","value2":"b","value3":"c"}' https://maker.ifttt.com/trigger/speedtest/with/key/bwsApCHUKW7lsihEPoT2tg
   url = 'https://maker.ifttt.com/trigger/'+trigger+'/with/key/bwsApCHUKW7lsihEPoT2tg'
@@ -99,7 +62,66 @@ def cloudpost(trigger, value1="value", value2="value", value3="value" ):
   except Exception as ex:
     return False
 
-print(cloudpost("speedtest", localstatus, dnsstatus, httpstatus))
-print(cloudpost("iPhonePush", "Hey!!"))
-textzeile=[current_timestamp(), localstatus, dnsstatus, httpstatus, httpdnsstatus, ping, upstream, downstream ]
+def statustext(status):
+  if status:
+    return "UP"
+  else:
+    return "Down"
+
+def writestatus(file, values):
+  with open(file, mode='a') as status_file:
+      status_writer = csv.writer(status_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+      status_writer.writerow(values)
+  return("done")
+
+def glow(color="green"):
+  if showLight:
+      print("Make the World bright")
+      try:
+        if color=="green":
+          piglow.green(100)
+          piglow.red(0)
+          piglow.orange(0)
+        elif color=="red":
+          piglow.green(0)
+          piglow.red(0)
+          piglow.orange(100)
+        else:
+          piglow.green(0)
+          piglow.red(100)
+          piglow.orange(0)
+        piglow.show()
+      except Exception as ex:
+        print(ex)
+
+localstatus=check(lanip, 80, 3)
+print("Local: ("+lanip+"): "+statustext(localstatus))
+dnsstatus=check(dnsip, 53, 3)
+print("DNS: ("+dnsip+"): "+statustext(dnsstatus))
+httpstatus=check(wanip, 80, 3)
+print("WAN IP: ("+wanip+"): "+statustext(httpstatus))
+httpdnsstatus=check(checkurl, 80, 3)
+print("WAN HTTP ("+checkurl+"): "+statustext(httpdnsstatus))
+
+allup = (localstatus and dnsstatus and httpstatus and httpdnsstatus)
+anyup = (localstatus or dnsstatus or httpstatus or httpdnsstatus)
+alldown = (not localstatus and not dnsstatus and not httpstatus and not httpdnsstatus)
+anydown = (not localstatus or not dnsstatus or not httpstatus or not httpdnsstatus)
+
+
+#print (localstatus and dnsstatus and httpstatus and httpdnsstatus)
+if allup:
+  speedtest()
+  #Speedtest Resultat auf Dropbox speichern
+  cloudpost("speedtest", ping, upstream, downstream)
+  glow("green")
+elif anyup:
+  glow("orange")
+else:
+  glow("green")
+  
+
+#Textzeile definieren
+textzeile=[current_timestamp(), statustext(localstatus), statustext(dnsstatus), statustext(httpstatus), statustext(httpdnsstatus), ping, upstream, downstream ]
+#Status ins File schreiben
 print(writestatus(statusfile, textzeile))
