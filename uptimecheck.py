@@ -10,7 +10,7 @@ import piglow
 import smbus
 import subprocess
 
-lanip="185.151.30.154"
+lanip="192.168.1.1"
 wanip="185.151.30.154"
 dnsip="8.8.8.8"
 checkurl="sunrise.ch"
@@ -42,7 +42,6 @@ def speedtest():
     global upstream
     global downstream
     global ping
-    print("Speedtest function")
     response = subprocess.Popen('/usr/bin/speedtest-cli --simple', shell=True, stdout=subprocess.PIPE).stdout.read().decode('utf-8')
     pingtime = re.findall('Ping:\s(.*?)\s', response, re.MULTILINE)
     download = re.findall('Download:\s(.*?)\s', response, re.MULTILINE)
@@ -109,14 +108,17 @@ anyup = (localstatus or dnsstatus or httpstatus or httpdnsstatus)
 alldown = (not localstatus and not dnsstatus and not httpstatus and not httpdnsstatus)
 anydown = (not localstatus or not dnsstatus or not httpstatus or not httpdnsstatus)
 
+#Textzeile definieren
+textzeile=[current_timestamp(), statustext(localstatus), statustext(dnsstatus), statustext(httpstatus), statustext(httpdnsstatus), ping, upstream, downstream ]
+#Status ins File schreiben
+print(writestatus(statusfile, textzeile))
 
-#print (localstatus and dnsstatus and httpstatus and httpdnsstatus)
-print(allup)
+
 if allup:
   print("Starting Speedtest")
   speedtest()
   #Speedtest Resultat auf Dropbox speichern
-  print(cloudpost("speedtest", ping, upstream, downstream))
+  print(cloudpost("speedtest", ping, downstream, upstream))
   glow("green")
 elif anyup:
   glow("orange")
@@ -124,7 +126,4 @@ else:
   glow("red")
   
 
-#Textzeile definieren
-textzeile=[current_timestamp(), statustext(localstatus), statustext(dnsstatus), statustext(httpstatus), statustext(httpdnsstatus), ping, upstream, downstream ]
-#Status ins File schreiben
-print(writestatus(statusfile, textzeile))
+
