@@ -116,7 +116,7 @@ if allup:
   print("Starting Speedtest")
   speedtest()
   #Speedtest Resultat auf Dropbox speichern
-  cloudpost("speedtest", ping, upstream, downstream)
+  print(cloudpost("speedtest", ping, upstream, downstream))
   glow("green")
 elif anyup:
   glow("orange")
