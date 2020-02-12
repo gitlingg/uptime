@@ -40,6 +40,7 @@ def speedtest():
   global upstream
   global downstream
   global ping
+  print("Speedtest function")
   try:
     response = subprocess.Popen('/usr/bin/speedtest-cli --simple', shell=True, stdout=subprocess.PIPE).stdout.read().decode('utf-8')
     pingtime = re.findall('Ping:\s(.*?)\s', response, re.MULTILINE)
