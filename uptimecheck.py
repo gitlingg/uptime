@@ -41,7 +41,6 @@ def speedtest():
   global downstream
   global ping
   print("Speedtest function")
-  try:
     response = subprocess.Popen('/usr/bin/speedtest-cli --simple', shell=True, stdout=subprocess.PIPE).stdout.read().decode('utf-8')
     pingtime = re.findall('Ping:\s(.*?)\s', response, re.MULTILINE)
     download = re.findall('Download:\s(.*?)\s', response, re.MULTILINE)
@@ -51,8 +50,6 @@ def speedtest():
     upstream = upload[0].replace(',', '.')
     print(downstream)
     return downstream
-  except Exception as ex:
-    return False
 
 def cloudpost(trigger, value1="value", value2="value", value3="value" ):
   #curl -X POST -H "Content-Type: application/json" -d '{"value1":"a","value2":"b","value3":"c"}' https://maker.ifttt.com/trigger/speedtest/with/key/bwsApCHUKW7lsihEPoT2tg
