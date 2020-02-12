@@ -111,7 +111,9 @@ anydown = (not localstatus or not dnsstatus or not httpstatus or not httpdnsstat
 
 
 #print (localstatus and dnsstatus and httpstatus and httpdnsstatus)
+print(allup)
 if allup:
+  print("Starting Speedtest")
   speedtest()
   #Speedtest Resultat auf Dropbox speichern
   cloudpost("speedtest", ping, upstream, downstream)
@@ -119,7 +121,7 @@ if allup:
 elif anyup:
   glow("orange")
 else:
-  glow("green")
+  glow("red")
   
 
 #Textzeile definieren
