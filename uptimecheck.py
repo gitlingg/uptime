@@ -8,9 +8,9 @@ import requests
 import piglow
 import smbus
 
-lanip="185.151.30.154"
+lanip="192.168.1.1"
 wanip="185.151.30.154"
-dnsip="lingg.be"
+dnsip="8.8.8.8"
 checkurl="sunrise.ch"
 checkip="8.8.8.8"
 statusfile="status.csv"
@@ -79,17 +79,17 @@ def glow(color="green"):
       print("Make the World bright")
       try:
         if color=="green":
-          piglow.green(100)
+          piglow.green(200)
           piglow.red(0)
           piglow.orange(0)
         elif color=="red":
           piglow.green(0)
-          piglow.red(0)
-          piglow.orange(100)
+          piglow.red(150)
+          piglow.orange(0)
         else:
           piglow.green(0)
-          piglow.red(100)
-          piglow.orange(0)
+          piglow.red(0)
+          piglow.orange(150)
         piglow.show()
       except Exception as ex:
         print(ex)
