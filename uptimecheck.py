@@ -1,4 +1,5 @@
 import os
+import re
 import csv
 import sys
 import time
@@ -7,8 +8,9 @@ import datetime
 import requests
 import piglow
 import smbus
+import subprocess
 
-lanip="192.168.1.1"
+lanip="185.151.30.154"
 wanip="185.151.30.154"
 dnsip="8.8.8.8"
 checkurl="sunrise.ch"
@@ -19,7 +21,7 @@ localstatus = dnsstatus = httpstatus = httpdnsstatus = False
 piglow.clear_on_exit = False
 
 upstream = downstream = ping = "0"
-runspeedtest = True
+runspeedtest = False
 showLight = True
 
 
@@ -35,12 +37,12 @@ def check(host="8.8.8.8", port=53, timeout=3):
         return False
 
 def speedtest():
-  # https://github.com/sivel/speedtest-cli/blob/master/speedtest.py
-  # https://pypi.org/project/speedtest-cli/
-  global upstream
-  global downstream
-  global ping
-  print("Speedtest function")
+    # https://github.com/sivel/speedtest-cli/blob/master/speedtest.py
+    # https://pypi.org/project/speedtest-cli/
+    global upstream
+    global downstream
+    global ping
+    print("Speedtest function")
     response = subprocess.Popen('/usr/bin/speedtest-cli --simple', shell=True, stdout=subprocess.PIPE).stdout.read().decode('utf-8')
     pingtime = re.findall('Ping:\s(.*?)\s', response, re.MULTILINE)
     download = re.findall('Download:\s(.*?)\s', response, re.MULTILINE)
