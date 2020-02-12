@@ -42,6 +42,7 @@ def speedtest():
   global ping
   try:
     response = subprocess.Popen('/usr/bin/speedtest-cli --simple', shell=True, stdout=subprocess.PIPE).stdout.read().decode('utf-8')
+    print(response)
     pingtime = re.findall('Ping:\s(.*?)\s', response, re.MULTILINE)
     download = re.findall('Download:\s(.*?)\s', response, re.MULTILINE)
     upload = re.findall('Upload:\s(.*?)\s', response, re.MULTILINE)
